@@ -144,3 +144,55 @@ In `domain/unlock/`, define:
 2. `src/domain/limits/evaluate.ts` with one dummy rule (always allow) so the loop is wired
 3. Background + YouTube content script + empty React popup/options (`App.tsx`)
 4. Then grow limits, unlock, and overlay behind those interfaces
+
+Based on plan.md:141-146 and the current state of your repository (where WXT and Tailwind are initialized, but all entrypoints are stubs), you should develop the Shared Core & Minimal Communication Loop first. 
+                                                                                                                                                                                                                    
+  Developing UI (popup, options, overlay) or complex challenge math before this will force you to mock state and rewrite contracts later.                                                                           
+  ──────                                                                                                                                                                                                            
+  ### Step 1: Shared Core Contracts (src/shared/)                                                                                                                                                                   
+                                                                                                                                                                                                                    
+  Establish the data contracts that every entrypoint and domain module will rely on:                                                                                                                                
+                                                                                                                                                                                                                    
+  1. src/shared/types.ts:                                                                                                                                                                                           
+      • Settings: session limit in minutes, daily allowed time window, max video count, challenge count.                                                                                                            
+      • UsageState: current session start timestamp, accumulated watch ms, videos watched today, last reset date, active unlock grant.                                                                              
+      • BlockDecision: { allowed: boolean; reason?: 'session_limit' | 'time_window' | 'video_count'; remainingMs?: number }.                                                                                        
+      • UnlockGrant: { until: number; scope: 'session' | 'day' }.                                                                                                                                                   
+  2. src/shared/storage.ts:                                                                                                                                                                                         
+      • Schema defaults for Settings and UsageState.                                                                                                                                                                
+      • Typed wrappers for chrome.storage.local.get and chrome.storage.local.set.                                                                                                                                   
+  3. src/shared/messages.ts:                                                                                                                                                                                        
+      • Discriminated union of runtime messages (USAGE_TICK, VIDEO_STARTED, GET_STATUS, BLOCK_STATE, REQUEST_UNLOCK, UNLOCK_ANSWER).                                                                                
+                                                                                                                                                                                                                    
+  ──────                                                                                                                                                                                                            
+  ### Step 2: The "Tracer Bullet" Pipeline (Dummy Loop)                                                                                                                                                             
+                                                                                                                                                                                                                    
+  Wire the communication pipeline so you can test end-to-end in Chrome:                                                                                                                                             
+                                                                                                                                                                                                                    
+  1. src/domain/limits/evaluate.ts:                                                                                                                                                                                 
+      • Implement an initial dummy evaluator that always returns { allowed: true }.                                                                                                                                 
+  2. Rename and update content.ts to src/entrypoints/youtube.content.ts:                                                                                                                                            
+      • Send a periodic USAGE_TICK message to the background service worker when on YouTube.                                                                                                                        
+  3. **background.ts**:                                                                                                                                                                                             
+      • Handle USAGE_TICK, run evaluate(), update usage in chrome.storage.local, and reply with BLOCK_STATE.                                                                                                        
+  4. **App.tsx**:                                                                                                                                                                                                   
+      • Fetch GET_STATUS or read UsageState to display live watch time / video count in the popup.                                                                                                                  
+                                                                                                                                                                                                                    
+  ──────                                                                                                                                                                                                            
+  ### Recommended Development Order
+  
+  │ Diagram exceeds terminal width (286 > 214 cols)
+  │ Displayed as code block. Widen terminal to view inline.
+  
+    flowchart TD
+      step1["1. Shared Contracts<br/>(types.ts, storage.ts, messages.ts)"]
+      step2["2. Tracer Bullet Pipeline<br/>(dummy evaluate, background & content script messaging)"]
+      step3["3. YouTube SPA Observer<br/>(yt-navigate-finish, video playback tracking)"]
+      step4["4. Limit Engine & Shadow Root Overlay<br/>(evaluate.ts session cap, createShadowRootUi blocking)"]
+      step5["5. Unlock Flow & Options UI<br/>(challenges, grants, settings page)"]
+  
+      step1 --> step2
+      step2 --> step3
+      step3 --> step4
+      step4 --> step5
+  ──────
