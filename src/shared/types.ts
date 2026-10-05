@@ -8,7 +8,7 @@ export type Settings = {
     extendTime: number; // in minutes
 };
 
-export type State = {
+export type UsageState = {
     sessionStartTimestamp: number | null;
     accumulatedWatchTime: number; // in milliseconds
     videosWatchedCount: number;

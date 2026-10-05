@@ -1,4 +1,4 @@
-import type { Settings, State } from './types';
+import type { Settings, UsageState } from './types';
 
 export const STORAGE_KEYS = {
   SETTINGS: 'settings',
@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 // Initial state for a fresh day/session
-export const INITIAL_STATE: State = {
+export const INITIAL_STATE: UsageState = {
   sessionStartTimestamp: null,
   accumulatedWatchTime: 0,
   videosWatchedCount: 0,
@@ -49,17 +49,17 @@ export async function setSettings(settings: Partial<Settings>): Promise<void> {
 
 
 // retrieves the current usage state, merged with INITIAL_STATE.
-export async function getUsageState(): Promise<State> {
+export async function getUsageState(): Promise<UsageState> {
   const result = await browser.storage.local.get(STORAGE_KEYS.USAGE_STATE);
 
   return {
     ...INITIAL_STATE,
-    ...(result[STORAGE_KEYS.USAGE_STATE] as Partial<State> | undefined),
+    ...(result[STORAGE_KEYS.USAGE_STATE] as Partial<UsageState> | undefined),
   };
 }
 
 // updates usage state with partial changes.
-export async function setUsageState(update: Partial<State>): Promise<void> {
+export async function setUsageState(update: Partial<UsageState>): Promise<void> {
   const current = await getUsageState();
   await browser.storage.local.set({
     [STORAGE_KEYS.USAGE_STATE]: {
