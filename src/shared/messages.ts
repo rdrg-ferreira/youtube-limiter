@@ -25,7 +25,7 @@ export type RequestUnlockMessage = {
 };
 
 export type UnlockAnswerMessage = {
-    type: 'UNLOCK_ASWER';
+    type: 'UNLOCK_ANSWER';
     payload: {
         challengeId: string;
         answer: string;

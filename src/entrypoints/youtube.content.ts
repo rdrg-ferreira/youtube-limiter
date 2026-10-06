@@ -25,11 +25,9 @@ export default defineContentScript({
           const video = document.querySelector("video");
 
           if (video && !video.paused && !video.ended && video.readyState >= 2) {
-            console.log('[ContentScript] Video is playing, sending USAGE_TICK...'); //TODO: remove
-
             const response = await browser.runtime.sendMessage<UsageTickMessage>({
               type: 'USAGE_TICK',
-              payload: { videoTimeSeconds: 1 }
+              payload: { videoTimeSeconds: 1 } // TODO: send video id to get video count
             });
 
             if (response && !response.allowed) {

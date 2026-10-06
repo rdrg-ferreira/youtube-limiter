@@ -10,7 +10,7 @@ export type Settings = {
 
 export type UsageState = {
     sessionStartTimestamp: number | null;
-    accumulatedWatchTime: number; // in milliseconds
+    accumulatedWatchTime: number; // in seconds
     videosWatchedCount: number;
     lastResetDate: string; // "YYYY-MM-DD"
     activeUnlockGrant: UnlockGrant | null;

@@ -1,9 +1,8 @@
 import type { Settings, UsageState, BlockDecision } from "@/shared/types";
 
-export default function evaluateLimits(
+export function evaluateLimits(
     settings: Settings,
-    usage: UsageState,
-    now: any // TODO: change to actual type
+    usage: UsageState
 ): BlockDecision {
     return { allowed: true };
 }
